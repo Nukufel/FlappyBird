@@ -1,12 +1,14 @@
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
+import java.awt.event.*;
+import java.io.*;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Random;
 
 
-public class FlappyBird  implements ActionListener {
+public class FlappyBird extends MouseAdapter implements ActionListener {
 
     public static  FlappyBird flappyBird;
 
@@ -20,9 +22,9 @@ public class FlappyBird  implements ActionListener {
 
     public Random rand;
 
-    public int ticks, yMotion;
+    public int ticks, yMotion, score, heighScore;
 
-    public boolean gameOver, started = true;
+    public boolean gameOver, started;
 
     public FlappyBird(){
         rand = new Random();
@@ -35,12 +37,13 @@ public class FlappyBird  implements ActionListener {
 
         jFrame.add(renderer);
         jFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        jFrame.addMouseListener(this);
         jFrame.setResizable(false);
         jFrame.setSize(WIDTH, HEIGHT);
         jFrame.setVisible(true);
 
+        bird = new Rectangle(WIDTH/2-10, HEIGHT /2-10, 20, 20);
         columns = new ArrayList<Rectangle>();
-        bird = new Rectangle(WIDTH/2-10, HEIGHT /2-100, 20, 20);
 
         addColumn(true);
         addColumn(true);
@@ -71,16 +74,21 @@ public class FlappyBird  implements ActionListener {
                 Rectangle column = columns.get(i);
                 if (column.x + column.width < 0) {
                     columns.remove(column);
+
                     if (column.y == 0) {
                         addColumn(false);
                     }
-
                 }
             }
 
             bird.y += yMotion;
 
             for (Rectangle column : columns) {
+
+                if (column.y == 0 && bird.x + bird.width/2 > column.x + column.width / 2 -10 && bird.x + bird.width / 2 <column.x + column.width / 2 + 10){
+                    score++;
+                }
+
                 if (column.intersects(bird)) {
                     gameOver = true;
                     bird.x = column.x - bird.width;
@@ -93,6 +101,7 @@ public class FlappyBird  implements ActionListener {
 
             if(gameOver){
                 bird.y = HEIGHT -120 -bird.height;
+                setHeighScore();
             }
         }
 
@@ -103,14 +112,14 @@ public class FlappyBird  implements ActionListener {
     public void addColumn(boolean start){
         int space = 300;
         int width = 100;
-        int hight = 50 + rand.nextInt(300);
+        int height = 50 + rand.nextInt(300);
 
         if(start) {
-            columns.add(new Rectangle(WIDTH + width + columns.size() * 300, HEIGHT - hight - 120, width, hight));
-            columns.add(new Rectangle(WIDTH + width + (columns.size() - 1) * 300, 0, width, HEIGHT - hight - space));
+            columns.add(new Rectangle(WIDTH + width + columns.size() * 300, HEIGHT - height - 120, width, height));
+            columns.add(new Rectangle(WIDTH + width + (columns.size() - 1) * 300, 0, width, HEIGHT - height - space));
         }else{
-            columns.add(new Rectangle(columns.get(columns.size()-1).x +600 + width + columns.size() * 300, HEIGHT - hight - 120, width, hight));
-            columns.add(new Rectangle(columns.get(columns.size()-1).x + width + (columns.size() - 1) * 300, 0, width, HEIGHT - hight - space));
+            columns.add(new Rectangle(columns.get(columns.size()-1).x +600, HEIGHT - height -120, width, height));
+            columns.add(new Rectangle(columns.get(columns.size()-1).x, 0, width, HEIGHT - height -space));
         }
     }
 
@@ -131,16 +140,57 @@ public class FlappyBird  implements ActionListener {
         g.fillRect(0, HEIGHT -120, WIDTH, 25);
 
         g.setColor(Color.RED );
-        g.fillRect(bird.x ,bird.y, bird.width, bird.height);
+        g.fillOval(bird.x ,bird.y, bird.width, bird.height);
 
         for (Rectangle column : columns){
             paintColumn(g, column);
         }
+        g.setColor(Color.white);
+        g.setFont(new Font("Arial", 1, 25));
+        g.drawString("Heighscore:"+heighScore, 600, 30);
 
         g.setColor(Color.white);
         g.setFont(new Font("Arial", 1, 100));
-        if (gameOver) {
-            g.drawString("Game Over!", 100, HEIGHT /2-50);
+
+
+        if(!gameOver && !started){
+            g.drawString("Click to start!", 100, HEIGHT/2-50);
+        }
+
+        if (gameOver) {   //bird.y + yMotion >= HEIGHT-120
+            g.setColor(Color.RED);
+            g.drawString("Game Over!", 75, HEIGHT /2-75);
+            g.setColor(Color.WHITE);
+            g.drawString("Click to start!", 75, HEIGHT /2+10);
+        }
+
+        g.drawString(String.valueOf(score), WIDTH/2-25, 100);
+    }
+
+    public void jump(){
+        if(gameOver){
+
+            bird = new Rectangle(WIDTH/2-10, HEIGHT /2-10, 20, 20);
+            columns.clear();
+            yMotion = 0;
+            score = 0;
+
+            addColumn(true);
+            addColumn(true);
+            addColumn(true);
+            addColumn(true);
+
+            gameOver = false;
+        }
+
+        if(!started){
+            started = true;
+        }else if(!gameOver){
+            if (yMotion > 0){
+                yMotion = 0;
+            }
+
+            yMotion -= 10;
         }
     }
 
@@ -148,6 +198,14 @@ public class FlappyBird  implements ActionListener {
         flappyBird = new FlappyBird();
     }
 
+    @Override
+    public void mouseClicked(MouseEvent e) {
+        jump();
+    }
 
-
+    public void setHeighScore(){
+        if (heighScore < score){
+            heighScore = score;
+        }
+    }
 }
