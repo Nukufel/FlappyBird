@@ -1,6 +1,8 @@
+import javax.imageio.ImageIO;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
+import java.awt.image.BufferedImage;
 import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -18,6 +20,8 @@ public class FlappyBird extends MouseAdapter implements ActionListener {
 
     public Rectangle bird;
 
+    public Image img;
+
     public ArrayList<Rectangle> columns;
 
     public Random rand;
@@ -27,6 +31,8 @@ public class FlappyBird extends MouseAdapter implements ActionListener {
     public boolean gameOver, started;
 
     public FlappyBird(){
+
+
         rand = new Random();
 
         renderer = new Renderer();
@@ -55,6 +61,18 @@ public class FlappyBird extends MouseAdapter implements ActionListener {
 
     @Override
     public void actionPerformed(ActionEvent e) {
+
+        try {
+            BufferedImage image = ImageIO.read(new File("C:\\Users\\nikla\\OneDrive\\Documents\\Schule\\Informatik\\JavaProjekt\\FlappyBird\\Files\\FlappyBird.png"));
+            img = image;
+        } catch (IOException a) {
+            a.printStackTrace();
+        }
+        try {
+            setHeighScore();
+        } catch (IOException ex) {
+            ex.printStackTrace();
+        }
 
         ticks++;
         int speed = 10;
@@ -101,7 +119,11 @@ public class FlappyBird extends MouseAdapter implements ActionListener {
 
             if(gameOver){
                 bird.y = HEIGHT -120 -bird.height;
-                setHeighScore();
+                try {
+                    setHeighScore();
+                } catch (IOException ex) {
+                    ex.printStackTrace();
+                }
             }
         }
 
@@ -123,7 +145,6 @@ public class FlappyBird extends MouseAdapter implements ActionListener {
         }
     }
 
-
     public void paintColumn(Graphics g, Rectangle column){
         g.setColor(Color.GREEN.darker());
         g.fillRect(column.x, column.y, column.width, column.height);
@@ -139,8 +160,8 @@ public class FlappyBird extends MouseAdapter implements ActionListener {
         g.setColor(new Color(124, 252, 0));
         g.fillRect(0, HEIGHT -120, WIDTH, 25);
 
-        g.setColor(Color.RED );
-        g.fillOval(bird.x ,bird.y, bird.width, bird.height);
+        g.drawImage(img,bird.x ,bird.y, null);
+
 
         for (Rectangle column : columns){
             paintColumn(g, column);
@@ -203,9 +224,18 @@ public class FlappyBird extends MouseAdapter implements ActionListener {
         jump();
     }
 
-    public void setHeighScore(){
-        if (heighScore < score){
+    public void setHeighScore() throws IOException {
+        BufferedReader reader = new BufferedReader(new FileReader(new File("").getAbsolutePath()+"\\Files\\heighscore.txt"));
+        heighScore = Integer.parseInt(reader.readLine());
+        reader.close();
+
+
+        if (score > heighScore){
             heighScore = score;
+            BufferedWriter writer = new BufferedWriter(new FileWriter(new File("").getAbsolutePath()+"\\Files\\heighscore.txt"));
+            writer.write(Integer.toString(heighScore));
+            writer.flush();
+            writer.close();
         }
     }
 }
