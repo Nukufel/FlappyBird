@@ -10,7 +10,7 @@ import java.util.ArrayList;
 import java.util.Random;
 
 
-public class FlappyBird extends MouseAdapter implements ActionListener {
+public class FlappyBird extends MouseAdapter implements ActionListener, KeyListener {
 
     public static  FlappyBird flappyBird;
 
@@ -20,7 +20,7 @@ public class FlappyBird extends MouseAdapter implements ActionListener {
 
     public Rectangle bird;
 
-    public Image img;
+    public Image img, img1;
 
     public ArrayList<Rectangle> columns;
 
@@ -44,6 +44,7 @@ public class FlappyBird extends MouseAdapter implements ActionListener {
         jFrame.add(renderer);
         jFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         jFrame.addMouseListener(this);
+        jFrame.addKeyListener(this);
         jFrame.setResizable(false);
         jFrame.setSize(WIDTH, HEIGHT);
         jFrame.setVisible(true);
@@ -63,7 +64,7 @@ public class FlappyBird extends MouseAdapter implements ActionListener {
     public void actionPerformed(ActionEvent e) {
 
         try {
-            BufferedImage image = ImageIO.read(new File("C:\\Users\\nikla\\OneDrive\\Documents\\Schule\\Informatik\\JavaProjekt\\FlappyBird\\Files\\FlappyBird.png"));
+            BufferedImage image = ImageIO.read(new File(new File("").getAbsolutePath()+"\\Files\\FlappyBird.png"));
             img = image;
         } catch (IOException a) {
             a.printStackTrace();
@@ -160,6 +161,8 @@ public class FlappyBird extends MouseAdapter implements ActionListener {
         g.setColor(new Color(124, 252, 0));
         g.fillRect(0, HEIGHT -120, WIDTH, 25);
 
+
+
         g.drawImage(img,bird.x ,bird.y, null);
 
 
@@ -237,5 +240,22 @@ public class FlappyBird extends MouseAdapter implements ActionListener {
             writer.flush();
             writer.close();
         }
+    }
+
+    @Override
+    public void keyTyped(KeyEvent e) {
+        if (e.getKeyChar() == ' ') {
+            jump();
+        }
+    }
+
+    @Override
+    public void keyPressed(KeyEvent e) {
+
+    }
+
+    @Override
+    public void keyReleased(KeyEvent e) {
+
     }
 }
