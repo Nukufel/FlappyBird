@@ -24,17 +24,15 @@ public class FlappyBird extends MouseAdapter implements ActionListener, KeyListe
 
     public ArrayList<Rectangle> columns;
 
-    public Random rand;
+    public Random rand = new Random();
 
     public int ticks, yMotion, score, heighScore;
 
     public boolean gameOver, started;
 
+    private int cloudXPos = 0, cloudYPos =rand.nextInt(600);
+
     public FlappyBird(){
-
-
-        rand = new Random();
-
         renderer = new Renderer();
 
         Timer timer = new Timer(20, this);
@@ -60,15 +58,23 @@ public class FlappyBird extends MouseAdapter implements ActionListener, KeyListe
         timer.start();
     }
 
+
+    /**
+     * Methode that runs again and again and again
+     * @param e
+     */
     @Override
     public void actionPerformed(ActionEvent e) {
 
         try {
             BufferedImage image = ImageIO.read(new File(new File("").getAbsolutePath()+"\\Files\\FlappyBird.png"));
             img = image;
+            BufferedImage image1 = ImageIO.read(new File(new File("").getAbsolutePath()+"\\Files\\Wolken.png"));
+            img1 = image1.getScaledInstance(150,100,0);
         } catch (IOException a) {
             a.printStackTrace();
         }
+
         try {
             setHeighScore();
         } catch (IOException ex) {
@@ -132,6 +138,25 @@ public class FlappyBird extends MouseAdapter implements ActionListener, KeyListe
 
     }
 
+    /**
+     * makes clouds and moves then
+     * @param g
+     * @throws InterruptedException
+     */
+    public void clouds(Graphics g) throws InterruptedException {
+
+        if (cloudXPos<-250) {
+            cloudYPos = rand.nextInt(600);
+            cloudXPos = 800;
+        }
+        cloudXPos-=5;
+        g.drawImage(img1,cloudXPos,cloudYPos,null);
+    }
+
+    /**
+     * adds the coordinates of a rectangle (pipes) to a Rectangle array
+     * @param start
+     */
     public void addColumn(boolean start){
         int space = 300;
         int width = 100;
@@ -146,11 +171,20 @@ public class FlappyBird extends MouseAdapter implements ActionListener, KeyListe
         }
     }
 
+    /**
+     * paints the pipes with the Rectangle coordinates of the array
+     * @param g
+     * @param column
+     */
     public void paintColumn(Graphics g, Rectangle column){
         g.setColor(Color.GREEN.darker());
         g.fillRect(column.x, column.y, column.width, column.height);
     }
 
+    /**
+     * paints the game
+     * @param g
+     */
     public void repaint(Graphics g) {
         g.setColor(Color.cyan);
         g.fillRect(0,0,WIDTH, HEIGHT);
@@ -161,10 +195,11 @@ public class FlappyBird extends MouseAdapter implements ActionListener, KeyListe
         g.setColor(new Color(124, 252, 0));
         g.fillRect(0, HEIGHT -120, WIDTH, 25);
 
-
-
-        g.drawImage(img,bird.x ,bird.y, null);
-
+        try {
+            clouds(g);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
 
         for (Rectangle column : columns){
             paintColumn(g, column);
@@ -189,8 +224,12 @@ public class FlappyBird extends MouseAdapter implements ActionListener, KeyListe
         }
 
         g.drawString(String.valueOf(score), WIDTH/2-25, 100);
+        g.drawImage(img,bird.x ,bird.y, null);
     }
 
+    /**
+     * makes that the bird jumps
+     */
     public void jump(){
         if(gameOver){
 
@@ -227,11 +266,14 @@ public class FlappyBird extends MouseAdapter implements ActionListener, KeyListe
         jump();
     }
 
+    /**
+     * sets the Highscore and reads and writs it in to a file
+     * @throws IOException
+     */
     public void setHeighScore() throws IOException {
         BufferedReader reader = new BufferedReader(new FileReader(new File("").getAbsolutePath()+"\\Files\\heighscore.txt"));
         heighScore = Integer.parseInt(reader.readLine());
         reader.close();
-
 
         if (score > heighScore){
             heighScore = score;
@@ -258,4 +300,5 @@ public class FlappyBird extends MouseAdapter implements ActionListener, KeyListe
     public void keyReleased(KeyEvent e) {
 
     }
+
 }
